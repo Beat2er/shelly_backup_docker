@@ -5,6 +5,8 @@ services:
     build: .
     volumes:
       - data:/usr/src/myapp/
+    environment:
+      - INTERVAL=604800 # Default interval of 7 days in seconds
     network_mode: host
 volumes:
   data:

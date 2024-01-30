@@ -1,9 +1,6 @@
 # Use OpenJDK 17 as the base image
 FROM openjdk:17-buster
 
-# Argument for setting the interval, default is 7 days (in seconds)
-ARG interval=604800
-
 # Install necessary packages
 RUN apt update && apt install -y wget nano && apt clean
 
@@ -23,8 +20,9 @@ RUN echo "#!/bin/bash\n" \
             "   echo \"Creating backup in \$backup_dir\"\n" \
             "   mkdir -p \$backup_dir\n" \
             "   java -jar /usr/src/myapp/ShellyScan.jar -backup \$backup_dir\n" \
-            "   echo 'Backup completed. Sleeping for $interval seconds...'\n" \
-            "   sleep $interval\n" \
+            "   # Use environment variable for interval, default to 604800 seconds if not set\n" \
+            "   echo 'Backup completed. Sleeping for ${INTERVAL:-604800} seconds...'\n" \
+            "   sleep \${INTERVAL:-604800}\n" \
             "done" > /entrypoint.sh
 
 # Give execution rights on the entrypoint script
