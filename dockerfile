@@ -19,7 +19,7 @@ RUN echo "#!/bin/bash\n" \
             "fi\n" \
             "# Infinite loop for running backups\n" \
             "while true; do\n" \
-            "   backup_dir=\"/usr/src/myapp/backup/$(date +%Y%m%d_%H%M%S)\"\n" \
+            "   backup_dir=\"/usr/src/myapp/backup/\$(date +%Y%m%d_%H%M%S)\"\n" \
             "   echo \"Creating backup in \$backup_dir\"\n" \
             "   mkdir -p \$backup_dir\n" \
             "   java -jar /usr/src/myapp/ShellyScan.jar -backup \$backup_dir\n" \
