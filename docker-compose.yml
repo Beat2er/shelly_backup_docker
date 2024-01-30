@@ -1,0 +1,9 @@
+version: '3'
+
+services:
+  shellyscan:
+    build: .
+    volumes:
+      - data:/usr/src/myapp/
+volumes:
+  data:
