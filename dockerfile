@@ -1,26 +1,31 @@
 # Use OpenJDK 17 as the base image
-FROM openjdk:17
+FROM openjdk:17-buster
 
-# Install cron
-RUN apt-get update && apt-get install -y cron
+# Argument for setting the interval, default is 7 days (in seconds)
+ARG interval=604800
 
-# Add crontab file
-RUN echo "0 0 * * 0 java -jar /usr/src/myapp/ShellyScan.jar /usr/src/myapp" > /etc/cron.d/shellyscan-cron
+# Install necessary packages
+RUN apt update && apt install -y wget nano && apt clean
 
-# Give execution rights on the cron job
-RUN chmod 0644 /etc/cron.d/shellyscan-cron
-
-# Apply cron job
-RUN crontab /etc/cron.d/shellyscan-cron
-
-# Create the log file to be able to run tail
-RUN touch /var/log/cron.log
+# Create a directory for the application
+RUN mkdir -p /usr/src/myapp
 
 # Create an entrypoint script
 RUN echo "#!/bin/bash\n" \
-            "echo Running\n" \
-            "# Run the command on container startup\n" \
-            "cron && tail -f /var/log/cron.log" > /entrypoint.sh
+            "echo 'ShellyScan backup service starting...'\n" \
+            "# Check if ShellyScan.jar exists, if not download it\n" \
+            "if [ ! -f /usr/src/myapp/ShellyScan.jar ]; then\n" \
+            "   wget -O /usr/src/myapp/ShellyScan.jar https://www.usna.it/shellyscanner/getfile.php?name=ShellyScan_1_0_2_sj.jar\n" \
+            "fi\n" \
+            "# Infinite loop for running backups\n" \
+            "while true; do\n" \
+            "   backup_dir=\"/usr/src/myapp/backup/$(date +%Y%m%d_%H%M%S)\"\n" \
+            "   echo \"Creating backup in \$backup_dir\"\n" \
+            "   mkdir -p \$backup_dir\n" \
+            "   java -jar /usr/src/myapp/ShellyScan.jar -backup \$backup_dir\n" \
+            "   echo 'Backup completed. Sleeping for $interval seconds...'\n" \
+            "   sleep $interval\n" \
+            "done" > /entrypoint.sh
 
 # Give execution rights on the entrypoint script
 RUN chmod +x /entrypoint.sh
